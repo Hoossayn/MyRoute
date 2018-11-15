@@ -37,12 +37,10 @@ public class RouteList extends AppCompatActivity {
     TextView description;
     TextView date, time, idValue, singleChar;
     EditText searchtextbox;
-    public String routes;
-    ArrayList<LatLng> cordList;
-    Button action;
     public LayoutInflater inflater;
     public View v;
     TextView arrayitem;
+    TextView emptyroute;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -65,10 +63,11 @@ public class RouteList extends AppCompatActivity {
         idValue = (TextView) v.findViewById(R.id.id);
         searchtextbox = (EditText) findViewById(R.id.searchtextbox);
         arrayitem = (TextView) v.findViewById(R.id.id);
+        emptyroute = (TextView)findViewById(R.id.emptyroute);
 
      //   cordList = getIntent().getParcelableArrayListExtra("LAT_LNG_ARRAY");
 
-        //Listview onclick listener
+        //ListView onclick listener
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -83,7 +82,12 @@ public class RouteList extends AppCompatActivity {
             }
         });
 
-
+        listview.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                return false;
+            }
+        });
 
         //Creating String to hold data items called from database
         final Cursor data = myDb.getAllData();
@@ -107,7 +111,15 @@ public class RouteList extends AppCompatActivity {
             //Initialized simplecursor adapter for inflating data onto the listview
             simpleCursorAdapter = new SimpleCursorAdapter(this, R.layout.list_design_spec, data, columns, boundTo, 1);
             listview.setAdapter(simpleCursorAdapter);
+
+            if(listview.getCount() == 0){
+                emptyroute.setVisibility(View.VISIBLE);
+            }else{
+                emptyroute.setVisibility(View.GONE);
+            }
         }
+
+
 
 
         ((EditText) findViewById(R.id.searchtextbox)).addTextChangedListener(new TextWatcher() {
@@ -117,7 +129,7 @@ public class RouteList extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                //On textchange listener handler
+                //On textChange listener handler
                 EditText searchtextbox = (EditText) findViewById(R.id.searchtextbox);
 
                 date = (TextView) v.findViewById(R.id.datelabel);

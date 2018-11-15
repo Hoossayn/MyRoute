@@ -4,19 +4,24 @@ import android.Manifest;
 import android.app.Dialog;
 import android.app.Service;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.location.Address;
 import android.location.Criteria;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -33,6 +38,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.common.collect.MapMaker;
@@ -41,21 +47,18 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, View.OnClickListener {
+    private int LOCATION_PERMISSION_CODE = 1;
     public String descriptionValue;
-    public double lng;
-    public double lat;
     Dialog dialog;
     GoogleMap mMap;
     ArrayList<LatLng> MarkerPoints;
     public ArrayList<String> latlngArray;
     ArrayList<Routes> routeslist;
-    GoogleApiClient mGoogleApiClient;
     Location lastKnownLocation;
-    Location location;
-    static LocationRequest mLocationRequest;
     MyLocationListener locationListener;
     public LocationManager locationManager;
 
@@ -63,11 +66,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     DbHelper db;
     double mLatitude = 0;
     double mLongitude = 0;
-    ListView listView;
     Button btn_start;
     Button btn_stop;
     Button history;
-    TextView routeList;
 
 
     @Override
@@ -78,6 +79,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             //  checkLocationPermission();
         }
+     /*   if (ContextCompat.checkSelfPermission(MapsActivity.this,
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(MapsActivity.this, "You have already granted this permission!",
+                    Toast.LENGTH_SHORT).show();
+        } else {
+            requestStoragePermission();
+        }*/
+        requestStoragePermission();
+        //AllowRunTimePermission();
+
         // Initializing
         MarkerPoints = new ArrayList<LatLng>();
         latlngArray = new ArrayList<String>();
@@ -126,16 +137,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         final LocationManager locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
         Criteria criteria = new Criteria();
-   /*     criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
         criteria.setPowerRequirement(Criteria.POWER_HIGH);
         criteria.setAltitudeRequired(false);
         criteria.setSpeedRequired(false);
         criteria.setCostAllowed(true);
-        criteria.setBearingRequired(false);*/
+        criteria.setBearingRequired(false);
 
         //API level 9 and up
-       /* criteria.setHorizontalAccuracy(Criteria.ACCURACY_HIGH);
-        criteria.setVerticalAccuracy(Criteria.ACCURACY_HIGH);*/
+        criteria.setHorizontalAccuracy(Criteria.ACCURACY_HIGH);
+        criteria.setVerticalAccuracy(Criteria.ACCURACY_HIGH);
 
         String provider = locationManager.getBestProvider(criteria, true);
 
@@ -181,7 +192,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onPause() {
         super.onPause();
-        // redrawLine();
+       routeSaver();
+       redrawLine();
     }
 
     @Override
@@ -214,37 +226,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             //buildGoogleApiClient();
             mMap.setMyLocationEnabled(true);
         }
-//        if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-//            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 2000, (float) (0.5), new LocationListener() {
-//                @Override
-//                public void onLocationChanged(Location location) {
-//
-//                    double latitude = location.getLatitude();
-//                    double longitude = location.getLongitude();
-//                    LatLng latLng = new LatLng(latitude, longitude); //you already have this
-//
-//                    MarkerPoints.add(latLng); //added
-//                    mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-//                    mMap.animateCamera(CameraUpdateFactory.zoomTo(16));
-//                    redrawLine(); //added
-//                }
-//
-//                @Override
-//                public void onStatusChanged(String provider, int status, Bundle extras) {
-//
-//                }
-//
-//                @Override
-//                public void onProviderEnabled(String provider) {
-//
-//                }
-//
-//                @Override
-//                public void onProviderDisabled(String provider) {
-//
-//                }
-//            });
-//        }
 
         if (lastKnownLocation != null) {
             double latitude = lastKnownLocation.getLatitude();
@@ -252,9 +233,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             LatLng latLng = new LatLng(latitude, longitude); //you already have this
 
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-            mMap.animateCamera(CameraUpdateFactory.zoomTo(16));
+            Geocoder geocoder = new Geocoder(getApplicationContext());
+            try {
+                List<Address> addressList = geocoder.getFromLocation(latitude, longitude, 1);
+                String localeAddress = addressList.get(0).getLocality() + ",";
+                localeAddress += addressList.get(0).getCountryName();
+                mMap.addMarker(new MarkerOptions().position(latLng).title(localeAddress));
 
+                //mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng,16));
+            }catch (Exception e){e.printStackTrace();}
 
         }
 
@@ -267,43 +255,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             mMap.clear();  //clears all Markers and Polylines
         }
         PolylineOptions options = new PolylineOptions().width(5).color(Color.BLUE);
-        for (int i = 0; i < MarkerPoints.size(); i++) {
-            LatLng latLng = MarkerPoints.get(i);
-            options.add(latLng);
+            for (int i = 0; i < MarkerPoints.size(); i++) {
+                LatLng latLng = MarkerPoints.get(i);
+                options.add(latLng);
 
-            Log.d("redrawline", String.valueOf(latLng));
-        }
-
-
-             //add Marker in current position
-
-
-        line = mMap.addPolyline(options); //add Polyline
-        Log.d("polyline", String.valueOf(MarkerPoints));
-    }
-
-
-    private void CordSaver() {
-        mMap.clear();  //clears all Markers and Polylines
-        PolylineOptions options = new PolylineOptions().width(5).color(Color.BLUE).geodesic(true);
-        for (int i = 0; i < MarkerPoints.size(); i++) {
-            LatLng point = MarkerPoints.get(i);
-            options.add(point);
-            if (lastKnownLocation != null) {
-                lng = lastKnownLocation.getLatitude();
-                lat = lastKnownLocation.getLongitude();
-                LatLng s = new LatLng(lng, lat);
-
-                //  latlngArray.add(s);
+                Log.d("redrawline", String.valueOf(latLng));
             }
-            //LatLng lastpoint = lat+"&"+lng;
-
-            Log.d("Latlng Array", String.valueOf(latlngArray));
-        }
 
 
-        line = mMap.addPolyline(options); //add Polyline
+            //add Marker in current position
+
+
+            line = mMap.addPolyline(options); //add Polyline
+            Log.d("polyline", String.valueOf(MarkerPoints));
     }
+
 
 
     public void routeSaver() {
@@ -322,9 +288,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 10000000, 1, locationListener);
         }
-         String lastpoint = null;
 
-        mMap.clear();  //clears all Markers and Polylines
+       // mMap.clear();  //clears all Markers and Polylines
         PolylineOptions options = new PolylineOptions().width(5).color(Color.BLUE).geodesic(true);
         for (int i = 0; i < MarkerPoints.size(); i++) {
             LatLng point = MarkerPoints.get(i);
@@ -350,7 +315,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     String descriptionCheck = description.getText().toString();
                     if(!descriptionCheck.isEmpty()){
                         descriptionValue = Objects.toString(description.getText().toString(), "");
-                        //CordSaver();
                         redrawLine();
                         routeSaver();
                         dialog.cancel();
@@ -397,12 +361,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public class MyLocationListener implements LocationListener {
 
-        String lastpoint = null;
+        String lastPoint = null;
         public void onLocationChanged( Location loc) {
 
 
       //  Bind to the service and get update from service
-
 
 
             double latitude =  loc.getLatitude();
@@ -428,11 +391,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             if (difference_in_locations >= 1296120.0) {
 
-                String lastpoint = lati + "&" + longi;
+                lastPoint = lati + "&" + longi;
 
-                Log.d("Latlng lastPoint", String.valueOf(lastpoint));
+               Log.d("Latlng lastPoint", String.valueOf(lastPoint));
 
-                latlngArray.add(lastpoint);
+                latlngArray.add(lastPoint);
                 routeSaver();
                 redrawLine(); //added
 
@@ -457,5 +420,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     }
+
+    private void requestStoragePermission() {
+
+        if (ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(MapsActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+            return;
+        }else{
+            // Write you code here if permission already given.
+
+        }
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == LOCATION_PERMISSION_CODE)  {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Permission GRANTED", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Permission DENIED", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
 
 }

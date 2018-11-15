@@ -181,7 +181,7 @@ public class MyService extends Service implements LocationListener {
         }
 
         if(lastKnowLocation != null){
-            ShowToastInIntentService(" Location = "+extractGPSWithTimeStamp(lastKnowLocation));
+         //   ShowToastInIntentService(" Location = "+extractGPSWithTimeStamp(lastKnowLocation));
         }
         return lastKnowLocation;
     }
@@ -190,7 +190,7 @@ public class MyService extends Service implements LocationListener {
     public void onLocationChanged(Location location) {
         this.lastKnowLocation = location;
         String extractGPS = extractGPSWithTimeStamp(location);
-        ShowToastInIntentService(" Location = "+extractGPS);
+     //   ShowToastInIntentService(" Location = "+extractGPS);
         Log.i(TAG," Location = "+extractGPS);
     }
 
