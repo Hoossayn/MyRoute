@@ -1,4 +1,12 @@
 <resources>
     <string name="app_name">MyRoute</string>
     <string name="title_activity_maps">Map</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="search">Search</string>
+    <string name="title_activity_about">about</string>
+    <string name="homelenghtytext">Save your favorite routs on the map so you can quickly find them later from your phone, or tablet.</string>
+
+    <string name="Rooobi">Roobi</string>
+    <string name="Route_is_saving">Route is saving</string>
 </resources>

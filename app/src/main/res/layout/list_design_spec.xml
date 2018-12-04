@@ -3,18 +3,30 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="20dp">
+    android:padding="20dp"
+    android:background="#2A2E43"
+    android:descendantFocusability="blocksDescendants">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
+        android:orientation="horizontal"
+        android:gravity="center">
 
         <LinearLayout
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:layout_marginRight="10dp">
+            android:layout_width="75dp"
+            android:layout_height="75dp"
+            android:background="@drawable/bodersolidyellowborder"
+            android:layout_marginRight="15dp">
+
+            <TextView
+                android:id="@+id/id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+                android:paddingBottom="5dp"
+                android:textColor="@android:color/white"
+                android:visibility="gone"/>
 
             <TextView
                 android:id="@+id/bigchar"
@@ -22,103 +34,143 @@
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:text="R"
+                android:padding="5dp"
                 android:textAlignment="center"
-                android:textColor="#33393B"
-                android:textSize="55sp"
-                android:textStyle="bold"/>
-
-
+                android:textColor="#ffffff"
+                android:textSize="50sp"/>
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:layout_height="match_parent"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:gravity="left"
-                android:orientation="vertical"
-                android:paddingRight="20dp"
-                android:paddingTop="10dp">
+            <TextView
+                android:id="@+id/idvalue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:paddingBottom="5dp"
+                android:textColor="#F1EFEF"
+                android:textSize="17sp" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="sans-serif-condensed"
-                    android:paddingBottom="5dp"
-                    android:text="Description:"
-                    android:textColor="@android:color/darker_gray"
-                    android:textSize="15sp" />
+            <TextView
+                android:id="@+id/descriptonlabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:paddingBottom="5dp"
+                android:maxLines="2"
+                android:text="Description"
+                android:textColor="#F1EFEF"
+                android:textSize="17sp" />
+        </LinearLayout>
 
-                <TextView
-                    android:id="@+id/descriptonlabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="sans-serif-condensed"
-                    android:paddingBottom="5dp"
-                    android:text="Description"
-                    android:textColor="#2d2f30"
-                    android:textSize="17sp" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_margin="5dp"
+            android:gravity="right">
 
+            <TextView
+                android:id="@+id/datelabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Date Created"
+                android:paddingBottom="5dp"
+                android:textColor="#F1EFEF"
+                android:textSize="15sp"/>
 
-            </LinearLayout>
+            <TextView
+                android:id="@+id/timelabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="12:12:21"
+                android:textColor="#F1EFEF"
+                android:textSize="15sp"/>
 
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:gravity="right"
-                android:orientation="vertical"
-                android:paddingTop="10dp">
-
-                <TextView
-                    android:id="@+id/datelabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="sans-serif-condensed"
-                    android:paddingBottom="5dp"
-                    android:text="Date Created:"
-                    android:textColor="@android:color/darker_gray"
-                    android:textSize="15sp" />
-
-                <TextView
-                    android:id="@+id/timelabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="sans-serif-condensed"
-                    android:paddingBottom="5dp"
-                    android:text="Time Created:"
-                    android:textColor="@android:color/darker_gray"
-                    android:textSize="15sp" />
-
-                <TextView
-                    android:id="@+id/id"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="sans-serif-condensed"
-                    android:paddingBottom="5dp"
-                    android:textColor="@android:color/darker_gray"
-                    android:visibility="visible"/>
-
-
-
-
-
-            </LinearLayout>
+            <ImageButton
+                android:id="@+id/expandablebtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:src="@drawable/expandabledown"
+                android:background="@null"/>
 
         </LinearLayout>
 
     </LinearLayout>
 
-
-
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:id="@+id/otherOptions"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="8dp">
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        android:focusable="false"
+        android:visibility="visible">
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bodersolid"
+            android:gravity="center"
+            android:padding="10dp"
+            android:orientation="horizontal"
+>
+
+            <Button
+                android:id="@+id/editbtn"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:background="@null"
+                android:layout_height="match_parent"
+                android:text="Edit"
+                android:textAllCaps="false"
+                android:textColor="#ffffff"
+                android:drawableTop="@drawable/edit"/>
+
+            <Button
+                android:id="@+id/deletebtn"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:background="@null"
+                android:layout_height="match_parent"
+                android:text="Delete"
+                android:onClick="deleteItem"
+                android:textAllCaps="false"
+                android:textColor="#ffffff"
+
+                android:drawableTop="@drawable/delete" />
+
+            <Button
+                android:id="@+id/exportbtn"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:background="@null"
+                android:layout_height="match_parent"
+                android:text="Export"
+                android:textAllCaps="false"
+                android:textColor="#ffffff"
+                android:drawableTop="@drawable/explore"/>
+            <Button
+                android:id="@+id/googledirectionbtn"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:background="@null"
+                android:layout_height="match_parent"
+                android:text="Map"
+                android:onClick="callGoogleMap"
+                android:textAllCaps="false"
+                android:textColor="#ffffff"
+                android:drawableTop="@drawable/map"/>
+        </LinearLayout>
+
+
 
     </LinearLayout>
+
 </LinearLayout>

@@ -1,13 +1,12 @@
-package com.example.android.myroute;
+package com.example.android.myroute.Activities;
 
 import android.Manifest;
 import android.app.Dialog;
-import android.app.Service;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
@@ -16,34 +15,32 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.IBinder;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.FragmentActivity;
+import androidx.core.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationRequest;
+import com.example.android.myroute.DbHelper.DbHelper;
+import com.example.android.myroute.Haversine;
+import com.example.android.myroute.MyService;
+import com.example.android.myroute.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.common.collect.MapMaker;
 
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -57,7 +54,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     GoogleMap mMap;
     ArrayList<LatLng> MarkerPoints;
     public ArrayList<String> latlngArray;
-    ArrayList<Routes> routeslist;
     Location lastKnownLocation;
     MyLocationListener locationListener;
     public LocationManager locationManager;
@@ -69,6 +65,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     Button btn_start;
     Button btn_stop;
     Button history;
+    TextView distanceCovered;
 
 
     @Override
@@ -79,24 +76,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             //  checkLocationPermission();
         }
-     /*   if (ContextCompat.checkSelfPermission(MapsActivity.this,
-                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(MapsActivity.this, "You have already granted this permission!",
-                    Toast.LENGTH_SHORT).show();
-        } else {
-            requestStoragePermission();
-        }*/
         requestStoragePermission();
         //AllowRunTimePermission();
 
         // Initializing
         MarkerPoints = new ArrayList<LatLng>();
         latlngArray = new ArrayList<String>();
-        routeslist = new ArrayList<>();
+        distanceCovered = (TextView)findViewById(R.id.displayDistanceCovered);
 
 
         db = new DbHelper(this);
-
         btn_start = (Button) findViewById(R.id.btn_start);
         btn_stop = (Button) findViewById(R.id.btn_stop);
         btn_stop.setEnabled(false);
@@ -105,6 +94,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), RouteList.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
             }
         });
@@ -196,6 +186,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
        redrawLine();
     }
 
+
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
@@ -265,9 +257,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             //add Marker in current position
 
-
+            try{
             line = mMap.addPolyline(options); //add Polyline
             Log.d("polyline", String.valueOf(MarkerPoints));
+
+            }catch (Exception e){e.printStackTrace();}
     }
 
 
@@ -304,56 +298,63 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.btn_start) {
+            btn_start.setText("Recording");
+            Drawable img = getApplicationContext().getResources().getDrawable(R.drawable.record);
+            btn_start.setCompoundDrawablesWithIntrinsicBounds(img,null,null,null);
+            redrawLine();
+            routeSaver();
+
+            btn_start.setEnabled(false);
+            btn_stop.setEnabled(true);
+
+        } else if (v.getId() == R.id.btn_stop) {
+
+            btn_start.setText("Start");
+            Drawable img = getApplicationContext().getResources().getDrawable(R.drawable.stop);
+            btn_start.setCompoundDrawablesWithIntrinsicBounds(img,null,null,null);
             dialog = new Dialog(MapsActivity.this); // Context, this, etc.
+            distanceCovered.setText("");
             dialog.setContentView(R.layout.dialog_obtainer);
             Button okbtn = (Button) dialog.findViewById(R.id.okbtn);
             Button cancelbtn = (Button) dialog.findViewById(R.id.cancelbtn);
             okbtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    mMap.clear();
                     EditText description = (EditText) dialog.findViewById(R.id.description);
                     String descriptionCheck = description.getText().toString();
-                    if(!descriptionCheck.isEmpty()){
-                        descriptionValue = Objects.toString(description.getText().toString(), "");
-                        redrawLine();
-                        routeSaver();
-                        dialog.cancel();
-                        btn_start.setEnabled(false);
-                        btn_stop.setEnabled(true);
-                    }
-                    else {
-                        Toast.makeText(MapsActivity.this,"Please enter some Text first",Toast.LENGTH_LONG).show();
-                    }
+
+                    //Write code here to position the pointer at the current position specified by the location manager
+
+
+                    descriptionValue = Objects.toString(description.getText().toString(), "");
+                    SimpleDateFormat dateformatter = new SimpleDateFormat("dd/MM/yyyy");
+                    SimpleDateFormat timeformatter = new SimpleDateFormat("HH:mm:ss");
+                    Date date = new Date();
+                    String dateValue = dateformatter.format(date);
+                    String timeValue = timeformatter.format(date);
+                    String descriptionInitial = descriptionValue.substring(0,1);
+                    db.insertData(descriptionValue,latlngArray, dateValue, timeValue, descriptionInitial);
+
+                    Intent intent = new Intent(getBaseContext(), RouteList.class);
+                    intent.putExtra("LAT_LNG_ARRAY", latlngArray);
+                    //startActivity(intent);
+                    btn_stop.setEnabled(false);
+                    btn_start.setEnabled(true);
+                    Log.d("Arraysizelatlng",String.valueOf(latlngArray.size()));
+
+                    dialog.dismiss();
                 }
             });
             cancelbtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    btn_start.setEnabled(true);
                     dialog.cancel();
                 }
             });
             dialog.setCancelable(false);
             dialog.show();
-
-        } else if (v.getId() == R.id.btn_stop) {
-            Log.d("Stop", "Stop Button is being triggered");
-            mMap.clear();
-            //Write code here to position the pointer at the current position specified by the location manager
-
-            SimpleDateFormat dateformatter = new SimpleDateFormat("dd/MM/yyyy");
-            SimpleDateFormat timeformatter = new SimpleDateFormat("HH:mm:ss");
-            Date date = new Date();
-            String dateValue = dateformatter.format(date);
-            String timeValue = timeformatter.format(date);
-            String descriptionInitial = descriptionValue.substring(0,1);
-            db.insertData(descriptionValue,latlngArray, dateValue, timeValue, descriptionInitial);
-            Intent intent = new Intent(getBaseContext(), RouteList.class);
-            intent.putExtra("LAT_LNG_ARRAY", latlngArray);
-            //startActivity(intent);
-            btn_stop.setEnabled(false);
-            btn_start.setEnabled(true);
-            Log.d("Arraysizelatlng",String.valueOf(latlngArray.size()));
-
 
         }
     }
@@ -362,6 +363,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public class MyLocationListener implements LocationListener {
 
         String lastPoint = null;
+        final int EarthRadius = 6371;
         public void onLocationChanged( Location loc) {
 
 
@@ -384,6 +386,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             double lng = location.getLongitude();
             double lat = location.getLatitude();
 
+
+
             double difference_in_locations = loc.distanceTo(location);
             Log.d("difference in location", String.valueOf(difference_in_locations));
 
@@ -401,7 +405,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
 
+
+            mLatitude = lastKnownLocation.getLatitude();
+            mLongitude = lastKnownLocation.getLongitude();
+            lati = loc.getLatitude();
+            longi = loc.getLongitude();
+
+
+            double d = Haversine.distance(mLatitude,mLongitude,lati,longi);
+
+            DecimalFormat formatter = new DecimalFormat("#0.00");
+            //formatter.format(d);
+
+         /*   switch (d){
+                case d < 1000:
+
+                    break;
+                case d >=1000:
+                    break;
+                default:
+                    break;
+            }*/
+
+            if(d < 1000){
+                String ss = String.valueOf(formatter.format(d));
+                distanceCovered.setText(ss +"m");
+            }else if(d >= 1000){
+                String ss = String.valueOf(formatter.format(d));
+                distanceCovered.setText(ss +"km");
+            }
+
+
         }
+
 
 
         @Override
@@ -426,7 +462,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MapsActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
             return;
-        }else{
+        }if(ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MapsActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+            {
+                ActivityCompat.requestPermissions(MapsActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                return;
+            }
+        }
+
+        else{
             // Write you code here if permission already given.
 
         }

@@ -1,51 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical">
+
+    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".Activities.MapsActivity" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center">
+        <TextView
+            android:id="@+id/displayDistanceCovered"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00.0"
+            android:textColor="@android:color/black"
+            android:layout_gravity="center"
+            android:textSize="32sp"/>
+    </RelativeLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:layout_alignParentBottom="true"
+        android:layout_gravity="bottom"
         android:layout_margin="20dp"
-        android:gravity="center">
+        android:gravity="center"
+        android:orientation="horizontal">
 
         <Button
             android:id="@+id/btn_start"
-            android:layout_width="0dp"
-            android:layout_weight="1"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="10dp"
             android:background="@drawable/buttonstyle"
-            android:text="Start"/>
+            android:drawableStart="@drawable/stop"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:text=" Start"
+            android:textColor="#ffffff" />
 
         <Button
             android:id="@+id/btn_stop"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_marginEnd="5dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
             android:background="@drawable/buttonstyle"
-            android:text="Stop"/>
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:text="Stop"
+            android:textColor="#ffffff" />
 
         <Button
             android:id="@+id/history"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/buttonstyle"
-            android:text="History"/>
+            android:text="History"
+            android:textColor="#ffffff" />
 
     </LinearLayout>
 
-
-        <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:tools="http://schemas.android.com/tools"
-            android:id="@+id/map"
-            android:name="com.google.android.gms.maps.SupportMapFragment"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            tools:context=".MapsActivity" />
-
-</LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

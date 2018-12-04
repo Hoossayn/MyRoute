@@ -1,10 +1,11 @@
-package com.example.android.myroute;
+package com.example.android.myroute.DbHelper;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.common.collect.ImmutableMap;
@@ -65,6 +66,24 @@ public class DbHelper extends SQLiteOpenHelper {
         return res;
     }
 
+    public void deleteItem(String id){
+        /*SQLiteDatabase db = this.getWritableDatabase();
+        Cursor r = db.rawQuery("delete * from", TABLE_NAME, null);*/
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query =("DELETE FROM " + TABLE_NAME + " WHERE " + _id + " = '" + id + "'" );
+
+        db.execSQL(query);
+    }
+
+    public void updateData(String desc, String id){
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        String query=("UPDATE "+ TABLE_NAME + " SET "+"DESCRIPTION =" + "'"+desc+"'" + " WHERE _id =" +id);
+        System.out.println(query.toString());
+        db.execSQL(query);
+
+    }
     public Cursor getSomeData(String softvalue) {
         String findquery = StringSubstitutor.replace("select * from ${tableName} WHERE DESCRIPTION LIKE '%${query}%' order by DATE DESC",
                 ImmutableMap.of("tableName", TABLE_NAME, "query", softvalue));

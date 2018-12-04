@@ -19,8 +19,8 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.Process;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -62,7 +62,7 @@ public class MyService extends Service implements LocationListener {
     private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 1; // 1 meters
 
     // The minimum time between updates in milliseconds
-    private static final long MIN_TIME_BW_UPDATES = 1000 * 3; // 3 seconds
+    private static final long MIN_TIME_BW_UPDATES = 1000 * 2; // 2 seconds
 
     // Declaring a Location Manager
     protected LocationManager locationManager;
@@ -226,6 +226,7 @@ public class MyService extends Service implements LocationListener {
 
 
     private class ServiceHandler extends Handler{
+
         public ServiceHandler(Looper looper) {
             super(looper);
         }
