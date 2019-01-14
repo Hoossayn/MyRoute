@@ -414,23 +414,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             double d = Haversine.distance(mLatitude,mLongitude,lati,longi);
 
+            double distance_in_meter = d*1000;
             DecimalFormat formatter = new DecimalFormat("#0.00");
             //formatter.format(d);
 
-         /*   switch (d){
-                case d < 1000:
+         /*   int value = (int) d;
 
+            switch (value){
+                case 100:
+                    String ss = String.valueOf(formatter.format(distance_in_meter));
+                    distanceCovered.setText(ss +"m");
                     break;
-                case d >=1000:
+                case 1000:
                     break;
                 default:
                     break;
-            }*/
+            }
+            */
 
-            if(d < 1000){
-                String ss = String.valueOf(formatter.format(d));
+            if(distance_in_meter < 100){
+                String ss = String.valueOf(formatter.format(distance_in_meter));
                 distanceCovered.setText(ss +"m");
-            }else if(d >= 1000){
+            }else if(distance_in_meter >= 100){
                 String ss = String.valueOf(formatter.format(d));
                 distanceCovered.setText(ss +"km");
             }

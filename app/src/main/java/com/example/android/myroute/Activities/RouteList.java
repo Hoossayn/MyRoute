@@ -468,17 +468,19 @@ public class RouteList extends AppCompatActivity {
 
         idValue = (TextView) findViewById(R.id.id);
 
-        String[] ary = idValue.getText().toString().split(",");
+        if(idValue !=  null ) {
+
+            String[] ary = idValue.getText().toString().split(",");
 
 
-        Log.d("EntireArray", Arrays.toString(ary));
-        Log.d("Entire Array First", ary[0]);
-        Log.d("Entire Array last", ary[ary.length -1]);
+            Log.d("EntireArray", Arrays.toString(ary));
+            Log.d("Entire Array First", ary[0]);
+            Log.d("Entire Array last", ary[ary.length - 1]);
 
-        String[] f = ary[0].split("&");
-        String[] l = ary[ary.length - 1].split("&");
-        Log.d("ff", Arrays.toString(f));
-        Log.d("ffl", Arrays.toString(l));
+            String[] f = ary[0].split("&");
+            String[] l = ary[ary.length - 1].split("&");
+            Log.d("ff", Arrays.toString(f));
+            Log.d("ffl", Arrays.toString(l));
 
 
             String ff = f[0];
@@ -503,40 +505,40 @@ public class RouteList extends AppCompatActivity {
             double lastLongitude = Double.parseDouble(longLast);
 
 
+            for (int a = 0; a < ary.length; a++) {
+
+                String[] finalsplit = Arrays.toString(ary).split(",");
+                String[] anotherfinalsplit = Arrays.toString(new String[]{finalsplit[a]}).split("&");
+
+                Log.d("Individual Items", Arrays.toString(new String[]{finalsplit[a]}));
+                Log.d("Individual Items2", Arrays.toString(anotherfinalsplit));
+                Log.d("Individual Split", anotherfinalsplit[0]);
+                Log.d("Individual Split 2", anotherfinalsplit[1]);
 
 
-        for (int a = 0; a < ary.length; a++) {
+                try {
 
-            String[] finalsplit = Arrays.toString(ary).split(",");
-            String[] anotherfinalsplit = Arrays.toString(new String[]{finalsplit[a]}).split("&");
-
-            Log.d("Individual Items", Arrays.toString(new String[]{finalsplit[a]}));
-            Log.d("Individual Items2", Arrays.toString(anotherfinalsplit));
-            Log.d("Individual Split", anotherfinalsplit[0]);
-            Log.d("Individual Split 2", anotherfinalsplit[1]);
+                    String latString = anotherfinalsplit[0].replace("[", "");
+                    String longString = anotherfinalsplit[1].replace("]", "");
 
 
-            try {
+                    latit = Double.parseDouble(latString);
+                    longit = Double.parseDouble(longString);
 
-                String latString = anotherfinalsplit[0].replace("[", "");
-                String longString = anotherfinalsplit[1].replace("]", "");
+                    Log.d("lat", String.valueOf(latit));
+                    Log.d("laat", String.valueOf(longit));
 
-
-                latit = Double.parseDouble(latString);
-                longit = Double.parseDouble(longString);
-
-                Log.d("lat", String.valueOf(latit));
-                Log.d("laat", String.valueOf(longit));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
             }
-            catch (Exception e){e.printStackTrace();}
 
+            Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse("http://maps.google.com/maps?saddr=" + firstLatitude + "," + fistLongitude + "&daddr=" + lastLatitude + "," + lastLongitude));
+            intent.setClassName("com.google.android.apps.maps", "com.google.android.maps.MapsActivity");
+            startActivity(intent);
+            //// listview = myDb.deleteData(listview.getPositionForView());
         }
-
-        Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse("http://maps.google.com/maps?saddr="+firstLatitude+","+fistLongitude+"&daddr="+lastLatitude+","+lastLongitude));
-        intent.setClassName("com.google.android.apps.maps", "com.google.android.maps.MapsActivity");
-        startActivity(intent);
-        //// listview = myDb.deleteData(listview.getPositionForView());
     }
 
 
